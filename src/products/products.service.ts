@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -25,31 +26,35 @@ export class ProductsService {
       await this.productRepository.save(product);
       return product;
     } catch (error) {
-      this.handleError(error.code, error.detail);
+      this.handleDBException(error);
     }
   }
 
   findAll() {
-    return `This action returns all products`;
+    return this.productRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const product = await this.productRepository.findOneBy({ id });
+    if (!product) throw new NotFoundException(`Product ${id} not found`);
+    return product;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    const product = await this.findOne(id);
+    await this.productRepository.delete(product.id);
+    return 'Product deleted successfully';
   }
 
-  private handleError(code: string, detail: string) {
-    this.logger.error(detail);
-    switch (code) {
+  private handleDBException(error: any) {
+    this.logger.error(error.detail);
+    switch (error.code) {
       case '23505':
-        throw new BadRequestException(detail);
+        throw new BadRequestException(error.detail);
       default:
         throw new InternalServerErrorException('Error al crear el producto');
     }
