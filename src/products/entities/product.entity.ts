@@ -2,6 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Product {
+  
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -10,7 +11,7 @@ export class Product {
   })
   title: string;
 
-  @Column('numeric', {
+  @Column('float', {
     default: 0,
   })
   price: number;
@@ -34,7 +35,7 @@ export class Product {
   @Column('text', {
     array: true,
   })
-  sizes: string;
+  sizes: string[];
 
   @Column('text')
   gender: string;
