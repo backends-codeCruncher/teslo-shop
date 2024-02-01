@@ -1,6 +1,7 @@
 import {
   AfterInsert,
   BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
   PrimaryGeneratedColumn,
@@ -51,6 +52,14 @@ export class Product {
   checkSlugInsert() {
     if (!this.slug) this.slug = this.title;
 
+    this.slug = this.slug
+      .toLowerCase()
+      .replaceAll(' ', '_')
+      .replaceAll("'", '');
+  }
+
+  @BeforeUpdate()
+  checkSlugUpdate() {
     this.slug = this.slug
       .toLowerCase()
       .replaceAll(' ', '_')
