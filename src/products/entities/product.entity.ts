@@ -1,5 +1,4 @@
 import {
-  AfterInsert,
   BeforeInsert,
   BeforeUpdate,
   Column,
@@ -46,7 +45,13 @@ export class Product {
   @Column('text')
   gender: string;
 
-  // tags e imagenes
+  @Column('text', {
+    array: true,
+    default: [],
+  })
+  tags: string[];
+
+  // imagenes
 
   @BeforeInsert()
   checkSlugInsert() {
