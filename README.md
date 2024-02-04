@@ -10,6 +10,16 @@
 1. Clonar proyecto
 2. Ejecutar el comando: ```npm install```
 3. Clonar el archivo ```.env.template``` y renombrar a ```.env```
-5. Configurar las variables de entorno
-6. Levantar base de datos ```docker compose up -d```
-7. Ejecutar aplicación ````npm run start:dev``
+4. Configurar las variables de entorno
+5. Levantar base de datos 
+```
+docker compose up -d
+```
+6. Ejecutar aplicación 
+```
+npm run start:dev
+```
+7. Ejecutar SEED para llenar la base de datos
+```
+localhost:3000/api/seed
+```
