@@ -124,7 +124,7 @@ export class ProductsService {
 
   async remove(id: string) {
     const product = await this.findOne(id);
-    await this.productRepository.delete(product.id);
+    await this.productRepository.remove(product);
     return 'Product deleted successfully';
   }
 
@@ -141,5 +141,15 @@ export class ProductsService {
   async findOnePlain(term: string) {
     const product = await this.findOne(term);
     return { ...product, images: product.images.map((img) => img.url) };
+  }
+
+  async deleteAllProducts() {
+    const query = this.productRepository.createQueryBuilder('product');
+
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      this.handleDBException(error);
+    }
   }
 }
