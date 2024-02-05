@@ -27,13 +27,13 @@ export class FilesController {
     FileInterceptor('file', {
       fileFilter: fileFilter,
       storage: diskStorage({
-        destination: './static/uploads',
+        destination: './static/products',
         filename: fileNamer,
       }),
     }),
   )
   uploadFile(@UploadedFile(ParseFilePipe) file: Express.Multer.File) {
-    const secureUrl = `${this.configService.get('HOST_API')}/files/uploads/${file.filename}`;
+    const secureUrl = `${this.configService.get('HOST_API')}/files/products/${file.filename}`;
 
     return secureUrl;
   }
