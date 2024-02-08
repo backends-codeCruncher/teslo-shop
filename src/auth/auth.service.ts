@@ -62,9 +62,7 @@ export class AuthService {
       throw new UnauthorizedException('User not valid');
 
     const userToken = this.getJWT({ id: user.id });
-
-    console.log(userToken);
-
+    
     return {
       ...user,
       token: userToken,
