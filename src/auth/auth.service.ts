@@ -37,11 +37,12 @@ export class AuthService {
       });
 
       await this.userRepository.save(user);
+
+      const userToken = this.getJWT({ id: user.id });
+
       return {
         ...user,
-        token: this.getJWT({
-          email: user.email,
-        }),
+        token: userToken,
       };
     } catch (error) {
       this.handleDBException(error);
@@ -53,18 +54,20 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true },
+      select: { email: true, password: true, id: true },
     });
 
     if (!user) throw new UnauthorizedException('User not found');
     if (!bcryptAdapter.compare(password, user.password))
       throw new UnauthorizedException('User not valid');
 
+    const userToken = this.getJWT({ id: user.id });
+
+    console.log(userToken);
+
     return {
       ...user,
-      token: this.getJWT({
-        email: user.email,
-      }),
+      token: userToken,
     };
   }
 
