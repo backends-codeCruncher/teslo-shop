@@ -4,7 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
-import { GetUser } from './decorators/get-user.decorator';
+import { GetUser, RawHeaders } from './decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -22,7 +22,16 @@ export class AuthController {
 
   @Get('private')
   @UseGuards(AuthGuard())
-  testingPrivateRoute(@GetUser('id') user: User, @Req() request: Express.Request) {
-    return user;
+  testingPrivateRoute(
+    @GetUser() user: User,
+    @GetUser('email') userEmail: string,
+    @RawHeaders() rawHeaders: string[],
+    @Req() request: Express.Request,
+  ) {
+    return {
+      user,
+      userEmail,
+      rawHeaders,
+    };
   }
 }
