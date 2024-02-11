@@ -6,7 +6,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { Auth, GetUser, RawHeaders, RoleProtected } from './decorators';
 import { UserRoleGuard } from './guards/user-role/user-role.guard';
-import { ValidRoles } from './interfaces';
+import { JWTPayload, ValidRoles } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
@@ -20,6 +20,15 @@ export class AuthController {
   @Post('login')
   login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
+  }
+
+
+  @Get('check-auth-status')
+  @Auth()
+  checkAuthStatus(
+    @GetUser() user: User,
+  ) {
+   return this.authService.checkAuthStatus(user); 
   }
 
   @Get('private')
