@@ -15,7 +15,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 
 import { JWTPayload } from './interfaces/jwp-payload.interface';
 
-import { bcryptAdapter } from 'src/config/bcrypt.adaptar';
+import { bcryptAdapter } from '../config/bcrypt.adapter';
 
 @Injectable()
 export class AuthService {
@@ -62,7 +62,7 @@ export class AuthService {
       throw new UnauthorizedException('User not valid');
 
     const userToken = this.getJWT({ id: user.id });
-    
+
     return {
       ...user,
       token: userToken,
