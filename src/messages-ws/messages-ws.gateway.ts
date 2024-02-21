@@ -69,7 +69,7 @@ export class MessagesWsGateway
 
     //! Emite a todos los clientes conectados
     this.wss.emit('messages-from-server', {
-      fullName: 'Soy yo!',
+      fullName: this.messagesWsService.getUserFullNameBySocketId(client.id),
       message: payload.message || 'no message!!',
     });
   }
