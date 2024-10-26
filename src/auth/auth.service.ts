@@ -37,11 +37,12 @@ export class AuthService {
       });
 
       await this.userRepository.save(user);
+      delete user.password;
 
       const userToken = this.getJWT({ id: user.id });
 
       return {
-        ...user,
+        user: user,
         token: userToken,
       };
     } catch (error) {
@@ -54,7 +55,14 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true, id: true },
+      select: {
+        email: true,
+        password: true,
+        id: true,
+        fullName: true,
+        isActive: true,
+        roles: true,
+      },
     });
 
     if (!user) throw new UnauthorizedException('User not found');
@@ -63,8 +71,10 @@ export class AuthService {
 
     const userToken = this.getJWT({ id: user.id });
 
+    delete user.password;
+
     return {
-      ...user,
+      user: user,
       token: userToken,
     };
   }
