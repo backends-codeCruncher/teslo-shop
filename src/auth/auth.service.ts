@@ -99,7 +99,7 @@ export class AuthService {
       case '23505':
         throw new BadRequestException(error.detail);
       default:
-        throw new InternalServerErrorException('Error al crear el producto');
+        throw new InternalServerErrorException('Error al crear usuario');
     }
   }
 }
