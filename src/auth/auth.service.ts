@@ -83,7 +83,7 @@ export class AuthService {
     const userToken = this.getJWT({ id: user.id });
 
     return {
-      ...user,
+      user: user,
       token: userToken,
     };
   }
