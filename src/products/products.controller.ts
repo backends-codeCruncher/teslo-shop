@@ -17,6 +17,7 @@ import { Auth, GetUser } from '../auth/decorators';
 import { User } from '../auth/entities/user.entity';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Product } from './entities';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Products')
 @Controller('products')
@@ -47,6 +48,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @Auth( ValidRoles.admin )
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -56,6 +58,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @Auth( ValidRoles.admin )
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.remove(id);
   }
