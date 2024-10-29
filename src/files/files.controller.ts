@@ -35,9 +35,9 @@ export class FilesController {
     }),
   )
   uploadFile(@UploadedFile(ParseFilePipe) file: Express.Multer.File) {
-    const secureUrl = `${this.configService.get('HOST_API')}/files/products/${file.filename}`;
+    const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`;
 
-    return secureUrl;
+    return { secureUrl };
   }
 
   @Get('product/:imageName')
