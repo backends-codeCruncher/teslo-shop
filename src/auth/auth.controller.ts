@@ -6,7 +6,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { Auth, GetUser, RawHeaders, RoleProtected } from './decorators';
 import { UserRoleGuard } from './guards/user-role/user-role.guard';
-import { JWTPayload, ValidRoles } from './interfaces';
+import { ValidRoles } from './interfaces';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Auth')
