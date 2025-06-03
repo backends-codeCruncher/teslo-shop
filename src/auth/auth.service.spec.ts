@@ -7,7 +7,10 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto';
 
 import { bcryptAdapter } from '../config/bcrypt.adapter';
-import { BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -93,5 +96,19 @@ describe('AuthService', () => {
       .mockRejectedValue({ code: '23505', detail: 'Email already exist' });
 
     await expect(authService.create(dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should throw an internal server error', async () => {
+    const dto: CreateUserDto = {
+      email: 'test@google.com',
+      fullName: 'Test User',
+      password: 'Abc123',
+    };
+
+    jest.spyOn(userRepository, 'save').mockRejectedValue({ code: '5' });
+
+    await expect(authService.create(dto)).rejects.toThrow(
+      InternalServerErrorException,
+    );
   });
 });
