@@ -4,12 +4,13 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, LoginUserDto } from './dto';
 
 import { bcryptAdapter } from '../config/bcrypt.adapter';
 import {
   BadRequestException,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 describe('AuthService', () => {
@@ -110,5 +111,80 @@ describe('AuthService', () => {
     await expect(authService.create(dto)).rejects.toThrow(
       InternalServerErrorException,
     );
+  });
+
+  it('should login user and return token', async () => {
+    const dto: LoginUserDto = {
+      email: 'test3@google.com',
+      password: 'Ax1Bz2',
+    };
+
+    const user = {
+      ...dto,
+      isActive: true,
+      fullName: 'Test User',
+      roles: ['user'],
+    } as User;
+
+    jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+    jest.spyOn(bcryptAdapter, 'compare').mockReturnValue(true);
+
+    const result = await authService.login(dto);
+
+    expect(result).toEqual({
+      user: {
+        email: user.email,
+        isActive: user.isActive,
+        fullName: user.fullName,
+        roles: user.roles,
+      },
+      token: mockTokenValue,
+    });
+  });
+
+  it('should throw Unauthorized exception if user not found', async () => {
+    const dto: LoginUserDto = {
+      email: 'test3@google.com',
+      password: 'Ax1Bz2',
+    };
+
+    jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
+
+    await expect(authService.login(dto)).rejects.toThrow(UnauthorizedException);
+    await expect(authService.login(dto)).rejects.toThrow('User not found');
+  });
+
+  it('should throw Unauthorized exception if user password not valid', async () => {
+    const dto: LoginUserDto = {
+      email: 'test3@google.com',
+      password: 'Ax1Bz2',
+    };
+
+    const user = {
+      ...dto,
+      isActive: true,
+      fullName: 'Test User',
+      roles: ['user'],
+    } as User;
+
+    jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+    jest.spyOn(bcryptAdapter, 'compare').mockReturnValue(false);
+
+    await expect(authService.login(dto)).rejects.toThrow(UnauthorizedException);
+    await expect(authService.login(dto)).rejects.toThrow('User not valid');
+  });
+
+  it('should check auth status and return user with new token', async () => {
+    const user = {
+      id: '1',
+      email: 'test3@google.com',
+    } as User;
+
+    const result = await authService.checkAuthStatus(user);
+
+    expect(result).toEqual({
+      user: { id: user.id, email: user.email },
+      token: mockTokenValue,
+    });
   });
 });

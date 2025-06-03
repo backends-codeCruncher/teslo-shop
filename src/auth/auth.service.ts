@@ -66,8 +66,10 @@ export class AuthService {
     });
 
     if (!user) throw new UnauthorizedException('User not found');
-    if (!bcryptAdapter.compare(password, user.password))
+
+    if (!bcryptAdapter.compare(password, user.password)) {
       throw new UnauthorizedException('User not valid');
+    }
 
     const userToken = this.getJWT({ id: user.id });
 
@@ -80,11 +82,9 @@ export class AuthService {
   }
 
   async checkAuthStatus(user: User) {
-    const userToken = this.getJWT({ id: user.id });
-
     return {
       user: user,
-      token: userToken,
+      token: this.getJWT({ id: user.id }),
     };
   }
 
