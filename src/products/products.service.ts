@@ -154,8 +154,8 @@ export class ProductsService {
   }
 
   async findOnePlain(term: string) {
-    const product = await this.findOne(term);
-    return { ...product, images: product.images.map((img) => img.url) };
+    const { images = [], ...rest } = await this.findOne(term);
+    return { ...rest, images: images.map((img) => img.url) };
   }
 
   async deleteAllProducts() {

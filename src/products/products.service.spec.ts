@@ -7,6 +7,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { User } from '../auth/entities/user.entity';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -21,7 +22,7 @@ describe('ProductsService', () => {
         id: 'UUID-VALID',
         title: 'Product 1',
         slug: 'product-1',
-        image: [
+        images: [
           {
             id: '1',
             url: 'image1.jpg',
@@ -206,7 +207,48 @@ describe('ProductsService', () => {
       id: 'UUID-VALID',
       title: 'Product 1',
       slug: 'product-1',
-      image: [{ id: '1', url: 'image1.jpg' }],
+      images: [{ id: '1', url: 'image1.jpg' }],
+    });
+  });
+
+  it('should throw an error NotFoundException if product not found', async () => {
+    const productId = '01cf0faf-00f9-4cfb-b27f-1f4ad57dda16';
+
+    const dto = {} as UpdateProductDto;
+    const user = {} as User;
+
+    jest.spyOn(productRepository, 'preload').mockResolvedValue(undefined);
+
+    await expect(service.update(productId, dto, user)).rejects.toThrow(
+      new NotFoundException(`Product with ${productId} not found`),
+    );
+  });
+
+  it('should update product successfully', async () => {
+    const productId = 'ABC';
+
+    const dto = {
+      title: 'Updated Product',
+      slug: 'updated-product',
+    } as UpdateProductDto;
+
+    const user = { id: '1', fullName: 'Sergio Barreras' } as User;
+
+    const product = {
+      ...dto,
+      price: 100,
+      description: 'some description',
+    } as unknown as Product;
+
+    jest.spyOn(productRepository, 'preload').mockResolvedValue(product);
+
+    const updatedProduct = await service.update(productId, dto, user);
+
+    expect(updatedProduct).toEqual({
+      id: 'UUID-VALID',
+      title: 'Product 1',
+      slug: 'product-1',
+      images: ['image1.jpg'],
     });
   });
 });
