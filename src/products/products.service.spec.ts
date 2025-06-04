@@ -5,6 +5,7 @@ import { Product, ProductImage } from './entities';
 import { DataSource, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { User } from '../auth/entities/user.entity';
+import { BadRequestException } from '@nestjs/common';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -78,7 +79,7 @@ describe('ProductsService', () => {
       images: ['img1.png'],
     } as CreateProductDto;
 
-    const {images: dtoWithNoImages, ...createDto} = dto;
+    const { images: dtoWithNoImages, ...createDto } = dto;
 
     const user = {
       id: '1',
@@ -106,5 +107,18 @@ describe('ProductsService', () => {
       images: ['img1.png'],
       user: { id: '1', email: 'test@google.com' },
     });
+  });
+
+  it('should throw a BadRequestException if create product fails', async () => {
+    const dto = {} as CreateProductDto;
+    const user = {} as User;
+
+    jest
+      .spyOn(productRepository, 'save')
+      .mockRejectedValue({ code: '23505', detail: 'Something went wrong' });
+
+    await expect(service.create(dto, user)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 });
