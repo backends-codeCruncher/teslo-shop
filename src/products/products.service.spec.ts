@@ -6,6 +6,7 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { User } from '../auth/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -15,6 +16,7 @@ describe('ProductsService', () => {
   beforeEach(async () => {
     const mockProductRepository = {
       create: jest.fn(),
+      count: jest.fn(),
       save: jest.fn(),
       find: jest.fn(),
       findOneBy: jest.fn(),
@@ -120,5 +122,39 @@ describe('ProductsService', () => {
     await expect(service.create(dto, user)).rejects.toThrow(
       BadRequestException,
     );
+  });
+
+  it('should find all products', async () => {
+    const dto: PaginationDto = {
+      limit: 10,
+      offset: 0,
+    };
+
+    const products = [
+      {
+        id: '1',
+        title: 'Test Product 1',
+        images: [{ id: 1, url: 'image1.jpg' }],
+      },
+      {
+        id: '2',
+        title: 'Test Product 2',
+        images: [{ id: 2, url: 'image2.jpg' }],
+      },
+    ] as Product[];
+
+    jest.spyOn(productRepository, 'find').mockResolvedValue(products);
+    jest.spyOn(productRepository, 'count').mockResolvedValue(products.length);
+
+    const result = await service.findAll(dto);
+
+    expect(result).toEqual({
+      count: products.length,
+      pages: dto.offset + 1,
+      products: products.map((product) => ({
+        ...product,
+        images: product.images.map((img) => img.url),
+      })),
+    });
   });
 });

@@ -27,5 +27,5 @@ export class PaginationDto {
   })
   @IsOptional()
   @IsIn(['men', 'women', 'unisex', 'kid'])
-  gender: 'men' | 'women' | 'unisex' | 'kid';
+  gender?: 'men' | 'women' | 'unisex' | 'kid';
 }
