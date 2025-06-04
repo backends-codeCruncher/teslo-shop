@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
+import { BadRequestException } from '@nestjs/common';
 
 describe('FilesController', () => {
   let controller: FilesController;
-  let service: FilesService;
+  let fileService: FilesService;
 
   beforeEach(async () => {
     const mockFilesService = {
@@ -25,18 +27,39 @@ describe('FilesController', () => {
     }).compile();
 
     controller = module.get<FilesController>(FilesController);
-    service = module.get<FilesService>(FilesService);
+    fileService = module.get<FilesService>(FilesService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-//   it('should get an image from a product', () => {
-//     const imageName = 'Test-Image';
+  it('should return file path when findProductImage is called', () => {
+    const mockResponse = { sendFile: jest.fn() } as unknown as Response;
+    const imageName = 'test-tmage.jpg';
+    const filePath = `/static/products/${imageName}`;
 
-//     const result = service.getStaticProductImage(imageName);
+    jest.spyOn(fileService, 'getStaticProductImage').mockReturnValue(filePath);
 
-//     console.log(result);
-//   });
+    controller.findProductImage(mockResponse, imageName);
+
+    expect(mockResponse.sendFile).toHaveBeenCalledWith(filePath);
+  });
+
+  it('should return a secureUrl when upload image is called with a file', () => {
+    const file = {
+      file: 'test-image.jpg',
+      filename: 'testImage',
+    } as unknown as Express.Multer.File;
+
+    const result = controller.uploadFile(file);
+
+    expect(result).toEqual({
+      secureUrl: 'http://localhost:3000/files/product/testImage',
+    });
+  });
+
+  it('should throw a bad request exception if file is not provided', () => {
+    expect(() => controller.uploadFile(null)).toThrow(BadRequestException);
+  });
 });

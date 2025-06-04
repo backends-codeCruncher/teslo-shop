@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Param,
@@ -35,6 +36,10 @@ export class FilesController {
     }),
   )
   uploadFile(@UploadedFile(ParseFilePipe) file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Make sure that file is an image');
+    }
+
     const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`;
 
     return { secureUrl };
