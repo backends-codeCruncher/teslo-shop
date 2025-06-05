@@ -45,4 +45,57 @@ describe('Auth - Login (e2e)', () => {
       expect(response.body.message).toContain(message);
     });
   });
+
+  it('/auth/login (POST) - wrong credentials - email', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: 'test200@gmail.com',
+        password: 'Ax1Bz2',
+      });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toEqual({
+      message: 'User not found',
+      error: 'Unauthorized',
+      statusCode: 401,
+    });
+  });
+
+  it('/auth/login (POST) - wrong credentials - password', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: 'test1@google.com',
+        password: 'Cx1Bz2',
+      });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toEqual({
+      message: 'User not valid',
+      error: 'Unauthorized',
+      statusCode: 401,
+    });
+  });
+
+  it('/auth/login (POST) - valid credentials', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: 'test1@google.com',
+        password: 'Ax1Bz2',
+      });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body).toEqual({
+      user: {
+        id: expect.any(String),
+        email: 'test1@google.com',
+        fullName: 'Fernando Herrera',
+        isActive: true,
+        roles: ['admin'],
+      },
+      token: expect.any(String),
+    });
+  });
 });
