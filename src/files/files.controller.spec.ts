@@ -54,8 +54,11 @@ describe('FilesController', () => {
 
     const result = controller.uploadFile(file);
 
+    console.log(result);
+
     expect(result).toEqual({
       secureUrl: 'http://localhost:3000/files/product/testImage',
+      fileName: 'testImage',
     });
   });
 

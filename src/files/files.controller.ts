@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Param,
-  ParseFilePipe,
   Post,
   Res,
   UploadedFile,
@@ -35,14 +34,14 @@ export class FilesController {
       }),
     }),
   )
-  uploadFile(@UploadedFile(ParseFilePipe) file: Express.Multer.File) {
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('Make sure that file is an image');
     }
 
     const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`;
 
-    return { secureUrl };
+    return { secureUrl, fileName: file.filename };
   }
 
   @Get('product/:imageName')
