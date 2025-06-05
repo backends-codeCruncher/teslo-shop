@@ -5,18 +5,7 @@ import { AppModule } from '../../../src/app.module';
 import { Repository } from 'typeorm';
 import { User } from '../../../src/auth/entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-
-const testingUser = {
-  email: 'testing.user@google.com',
-  password: 'Ax1Cw2',
-  fullName: 'Testing User',
-} as User;
-
-const testingAdmin = {
-  email: 'testing.admin@google.com',
-  password: 'Ax1Cw2',
-  fullName: 'Testing Admin',
-} as User;
+import { testingAdmin, testingUser } from '../../../test/testing-users';
 
 describe('Auth - Login (e2e)', () => {
   let app: INestApplication;
@@ -40,9 +29,6 @@ describe('Auth - Login (e2e)', () => {
 
     userRepository = app.get<Repository<User>>(getRepositoryToken(User));
 
-    userRepository.delete({ email: testingUser.email });
-    userRepository.delete({ email: testingAdmin.email });
-
     await request(app.getHttpServer()).post('/auth/register').send(testingUser);
 
     await request(app.getHttpServer())
@@ -58,6 +44,9 @@ describe('Auth - Login (e2e)', () => {
   });
 
   afterAll(async () => {
+    await userRepository.delete({ email: testingUser.email });
+    await userRepository.delete({ email: testingAdmin.email });
+
     await app.close();
   });
 

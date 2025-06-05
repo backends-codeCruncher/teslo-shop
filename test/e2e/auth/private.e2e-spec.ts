@@ -6,20 +6,9 @@ import { Repository } from 'typeorm';
 
 import { AppModule } from '../../../src/app.module';
 import { User } from '../../../src/auth/entities/user.entity';
+import { testingAdmin, testingUser } from '../../../test/testing-users';
 
 import { validate } from 'uuid';
-
-const testingUser = {
-  email: 'testing.user@google.com',
-  password: 'Abc12345',
-  fullName: 'Testing user',
-};
-
-const testingAdminUser = {
-  email: 'testing.admin@google.com',
-  password: 'Abc12345',
-  fullName: 'Testing admin',
-};
 
 describe('AuthModule Private (e2e)', () => {
   let app: INestApplication;
@@ -43,8 +32,6 @@ describe('AuthModule Private (e2e)', () => {
     await app.init();
 
     userRepository = app.get<Repository<User>>(getRepositoryToken(User));
-    await userRepository.delete({ email: testingUser.email });
-    await userRepository.delete({ email: testingAdminUser.email });
 
     const responseUser = await request(app.getHttpServer())
       .post('/auth/register')
@@ -52,13 +39,21 @@ describe('AuthModule Private (e2e)', () => {
 
     const responseAdmin = await request(app.getHttpServer())
       .post('/auth/register')
-      .send(testingAdminUser);
+      .send(testingAdmin);
+
+    await userRepository.update(
+      { email: testingAdmin.email },
+      { roles: ['admin', 'super-user'] },
+    );
 
     token = responseUser.body.token;
     adminToken = responseAdmin.body.token;
   });
 
   afterAll(async () => {
+    await userRepository.delete({ email: testingUser.email });
+    await userRepository.delete({ email: testingAdmin.email });
+
     await app.close();
   });
 
@@ -90,13 +85,64 @@ describe('AuthModule Private (e2e)', () => {
 
   it('should return custom object if token is valid', async () => {
     // Validar la respuesta
+    const response = await request(app.getHttpServer())
+      .get('/auth/private')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({
+      user: {
+        id: expect.any(String),
+        email: testingUser.email,
+        fullName: testingUser.fullName,
+        isActive: true,
+        roles: ['user'],
+      },
+      userEmail: testingUser.email,
+      rawHeaders: [
+        'Host',
+        expect.stringContaining('127.0.0.1'),
+        'Accept-Encoding',
+        'gzip, deflate',
+        'Authorization',
+        expect.stringContaining('Bearer'),
+        'Connection',
+        'close',
+      ],
+    });
   });
 
-  it('should return 401 if admin token is provided', async () => {
-    const response = await request(app.getHttpServer()).get('/auth/private3');
+  it('should return 403 if user token is provided', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/auth/private3')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(403);
+    expect(response.body).toEqual({
+      error: 'Forbidden',
+      message: 'User Testing User need a valid role: [admin]',
+      statusCode: 403,
+    });
   });
 
   it('should return user if admin token is provided', async () => {
-    const response = await request(app.getHttpServer()).get('/auth/private3');
+    const response = await request(app.getHttpServer())
+      .get('/auth/private3')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    const userId = response.body.user.id;
+
+    expect(validate(userId)).toBe(true);
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      user: {
+        id: expect.any(String),
+        email: testingAdmin.email,
+        fullName: testingAdmin.fullName,
+        isActive: true,
+        roles: ['admin', 'super-user'],
+      },
+    });
   });
 });

@@ -24,13 +24,10 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
-
   @Get('check-auth-status')
   @Auth()
-  checkAuthStatus(
-    @GetUser() user: User,
-  ) {
-   return this.authService.checkAuthStatus(user); 
+  checkAuthStatus(@GetUser() user: User) {
+    return this.authService.checkAuthStatus(user);
   }
 
   @Get('private')
@@ -49,14 +46,14 @@ export class AuthController {
   }
 
   @Get('private2')
-  @RoleProtected(ValidRoles.superUser)
+  @RoleProtected(ValidRoles.superUser, ValidRoles.admin)
   @UseGuards(AuthGuard(), UserRoleGuard)
   privateRoute2(@GetUser() user: User) {
     return { ok: true, user: user };
   }
 
   @Get('private3')
-  @Auth()
+  @Auth(ValidRoles.admin)
   privateRoute3(@GetUser() user: User) {
     return { ok: true, user: user };
   }

@@ -6,12 +6,7 @@ import { Repository } from 'typeorm';
 
 import { AppModule } from '../../../src/app.module';
 import { User } from '../../../src/auth/entities/user.entity';
-
-const testingUser = {
-  email: 'testing.user@google.com',
-  password: 'Abc12345',
-  fullName: 'Testing User',
-};
+import { testingUser } from '../../../test/testing-users';
 
 describe('Auth - Register (e2e)', () => {
   let app: INestApplication;
@@ -31,9 +26,11 @@ describe('Auth - Register (e2e)', () => {
     );
     await app.init();
     userRepository = app.get<Repository<User>>(getRepositoryToken(User));
+
+    await userRepository.delete({ email: testingUser.email });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await userRepository.delete({ email: testingUser.email });
     await app.close();
   });
