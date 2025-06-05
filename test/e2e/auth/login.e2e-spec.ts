@@ -2,11 +2,27 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../../src/app.module';
+import { Repository } from 'typeorm';
+import { User } from '../../../src/auth/entities/user.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
+
+const testingUser = {
+  email: 'testing.user@google.com',
+  password: 'Ax1Cw2',
+  fullName: 'Testing User',
+} as User;
+
+const testingAdmin = {
+  email: 'testing.admin@google.com',
+  password: 'Ax1Cw2',
+  fullName: 'Testing Admin',
+} as User;
 
 describe('Auth - Login (e2e)', () => {
   let app: INestApplication;
+  let userRepository: Repository<User>;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -21,6 +37,24 @@ describe('Auth - Login (e2e)', () => {
     );
 
     await app.init();
+
+    userRepository = app.get<Repository<User>>(getRepositoryToken(User));
+
+    userRepository.delete({ email: testingUser.email });
+    userRepository.delete({ email: testingAdmin.email });
+
+    await request(app.getHttpServer()).post('/auth/register').send(testingUser);
+
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send(testingAdmin);
+
+    await userRepository.update(
+      {
+        email: testingAdmin.email,
+      },
+      { roles: ['admin'] },
+    );
   });
 
   afterAll(async () => {
@@ -50,8 +84,8 @@ describe('Auth - Login (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
-        email: 'test200@gmail.com',
-        password: 'Ax1Bz2',
+        email: 'testingUser.email@google.com',
+        password: testingUser.password,
       });
 
     expect(response.statusCode).toBe(401);
@@ -66,8 +100,8 @@ describe('Auth - Login (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
-        email: 'test1@google.com',
-        password: 'Cx1Bz2',
+        email: testingUser.email,
+        password: 'testingUser.password',
       });
 
     expect(response.statusCode).toBe(401);
@@ -82,16 +116,16 @@ describe('Auth - Login (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
-        email: 'test1@google.com',
-        password: 'Ax1Bz2',
+        email: testingAdmin.email,
+        password: testingAdmin.password,
       });
 
     expect(response.statusCode).toBe(201);
     expect(response.body).toEqual({
       user: {
         id: expect.any(String),
-        email: 'test1@google.com',
-        fullName: 'Fernando Herrera',
+        email: testingAdmin.email,
+        fullName: testingAdmin.fullName,
         isActive: true,
         roles: ['admin'],
       },
